@@ -22,7 +22,7 @@ Netlify is used as the web host since it does not require setting up a separate 
 
 - generateCoverPDF.js: Netlify serverless function for combining images and creating book cover with spine text into a downloadable PDF
 
-## Steps to deploy to Netlify
+## Steps to deploy to Netlify from GitHub using Netlify CLI
 
 Install Netlify CLI: 
 
@@ -30,10 +30,17 @@ Install Netlify CLI:
 npm install -g netlify-cli
 ```
 
+Login to Netlify
+
+```
+netlify login
+```
+
 Run locally
 
 ```
-netlify dev
+cd book-page-estimator
+netlify init
 ```
 
 Deploy to Netlify
@@ -41,4 +48,6 @@ Deploy to Netlify
 ```
 netlify deploy --prod
 ```
-Netlify will auto-detect the serverless function in /netlify/functions and deploy it with the frontend.
+
+Follow the prompts to connect to GitHub and deploy your site.
+Once Github main branch is connected to Netlify, the repo will be deployed using `npm run build` command and published to `dist`.
