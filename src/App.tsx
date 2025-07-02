@@ -5,7 +5,7 @@ import { estimatePages } from './estimatePages';
 function App() {
   const [wordCount, setWordCount] = useState('');
   const [trimSize, setTrimSize] = useState('6x9');
-  const [fontSize, setFontSize] = useState(12);
+  const [fontSize, setFontSize] = useState<number | "">("");
   const [title, setTitle] = useState('My Book Title');
   const [frontFile, setFrontFile] = useState<File | null>(null);
   const [backFile, setBackFile] = useState<File | null>(null);
