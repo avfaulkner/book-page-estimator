@@ -1,11 +1,15 @@
+// === netlify/functions/generateCoverPDF.js ===
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 const sharp = require('sharp');
-const fs = require('fs');
 const multiparty = require('multiparty');
+const fs = require('fs');
 
 exports.handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
+    return {
+      statusCode: 405,
+      body: 'Method Not Allowed',
+    };
   }
 
   return new Promise((resolve, reject) => {
@@ -13,7 +17,7 @@ exports.handler = async (event, context) => {
 
     form.parse(event, async (err, fields, files) => {
       if (err) {
-        console.error(err);
+        console.error('Form parsing error:', err);
         return resolve({ statusCode: 500, body: 'File upload error' });
       }
 
@@ -31,28 +35,34 @@ exports.handler = async (event, context) => {
 
         const pdfDoc = await PDFDocument.create();
         const page = pdfDoc.addPage([
-          totalWidth * 72, // 1 inch = 72 points
+          totalWidth * 72,
           trimHeight * 72,
         ]);
 
-        const frontImage = await sharp(frontPath).resize({
-          width: Math.floor(trimWidth * 300),
-          height: Math.floor(trimHeight * 300),
-        }).jpeg().toBuffer();
+        const frontImage = await sharp(frontPath)
+          .resize({
+            width: Math.floor(trimWidth * 300),
+            height: Math.floor(trimHeight * 300),
+          })
+          .jpeg()
+          .toBuffer();
 
         const frontEmbed = await pdfDoc.embedJpg(frontImage);
         page.drawImage(frontEmbed, {
-          x: spineWidthInInches * 72 + 0,
+          x: spineWidthInInches * 72,
           y: 0,
           width: trimWidth * 72,
           height: trimHeight * 72,
         });
 
         if (backPath) {
-          const backImage = await sharp(backPath).resize({
-            width: Math.floor(trimWidth * 300),
-            height: Math.floor(trimHeight * 300),
-          }).jpeg().toBuffer();
+          const backImage = await sharp(backPath)
+            .resize({
+              width: Math.floor(trimWidth * 300),
+              height: Math.floor(trimHeight * 300),
+            })
+            .jpeg()
+            .toBuffer();
 
           const backEmbed = await pdfDoc.embedJpg(backImage);
           page.drawImage(backEmbed, {
@@ -75,17 +85,18 @@ exports.handler = async (event, context) => {
         });
 
         const pdfBytes = await pdfDoc.save();
+
         return resolve({
           statusCode: 200,
           headers: {
             'Content-Type': 'application/pdf',
-            'Content-Disposition': 'attachment; filename=book_cover.pdf',
+            'Content-Disposition': 'attachment; filename="book_cover.pdf"',
           },
-          body: pdfBytes.toString('base64'),
+          body: Buffer.from(pdfBytes).toString('base64'),
           isBase64Encoded: true,
         });
-      } catch (e) {
-        console.error(e);
+      } catch (error) {
+        console.error('PDF generation error:', error);
         return resolve({ statusCode: 500, body: 'PDF generation error' });
       }
     });
