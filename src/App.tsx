@@ -44,7 +44,7 @@ function App() {
       if (!ctx) return;
 
       const dpi = 50; // preview resolution
-      const [trimW, trimH] = trimSize.split('x').map(parseFloat);
+      const [trimW, trimH] = trimSize.split('x').map(n => parseFloat(n.trim())) as [number, number];
       const spineW = pages * 0.002252;
       const totalW = (trimW * 2 + spineW) * dpi;
       const height = trimH * dpi;
@@ -99,6 +99,41 @@ function App() {
     };
 
     drawPreview();
+
+    const addRuler = () => {
+      const ctx = canvasRef.current!.getContext('2d');
+      if (!ctx) return;
+
+      const dpi = 50;
+      const [trimW, trimH] = trimSize.split('x').map(n => parseFloat(n.trim())) as [number, number];
+      const spineW = pages * 0.002252;
+      const totalW = (trimW * 2 + spineW) * dpi;
+      const height = trimH * dpi;
+
+      ctx.fillStyle = '#000';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+
+      // Horizontal inch marks
+      for (let i = 0; i <= totalW; i += dpi) {
+        ctx.beginPath();
+        ctx.moveTo(i, height);
+        ctx.lineTo(i, height - 10);
+        ctx.stroke();
+        ctx.fillText((i / dpi).toFixed(0) + '"', i, height - 12);
+      }
+
+      // Vertical inch marks
+      for (let i = 0; i <= height; i += dpi) {
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(10, i);
+        ctx.stroke();
+        ctx.fillText((i / dpi).toFixed(0) + '"', 15, i + 3);
+      }
+    };
+
+    addRuler();
   }, [frontFile, backFile, title, trimSize, pages]);
 
   return (
@@ -116,8 +151,8 @@ function App() {
       <input
         type="number"
         placeholder="Font Size"
-        value={fontSize}
-        onChange={(e) => setFontSize(parseFloat(e.target.value))}
+        value={fontSize ?? ""}
+        onChange={(e) => setFontSize(e.target.value === "" ? "" : parseFloat(e.target.value))}
         className="w-full mb-3 p-2 border rounded"
       />
 
@@ -160,7 +195,21 @@ function App() {
       </button>
 
       <h2 className="text-lg font-semibold mb-2">Live Preview:</h2>
-      <canvas ref={canvasRef} className="border rounded shadow-md w-full" />
+      $1
+
+      <button
+        onClick={() => {
+          const canvas = canvasRef.current;
+          if (!canvas) return;
+          const link = document.createElement('a');
+          link.download = 'book_cover_preview.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        }}
+        className="mt-2 bg-green-600 text-white px-4 py-2 rounded"
+      >
+        Download Preview as Image
+      </button>
     </div>
   );
 }
