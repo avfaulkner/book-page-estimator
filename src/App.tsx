@@ -1,4 +1,5 @@
-import { useState } from 'react';
+// === src/App.tsx ===
+import { useState, useRef, useEffect } from 'react';
 import { estimatePages } from './estimatePages';
 
 function App() {
@@ -8,6 +9,7 @@ function App() {
   const [title, setTitle] = useState('My Book Title');
   const [frontFile, setFrontFile] = useState<File | null>(null);
   const [backFile, setBackFile] = useState<File | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const pages = estimatePages(Number(wordCount) || 0, trimSize, fontSize);
 
@@ -33,6 +35,55 @@ function App() {
     link.download = 'book_cover.pdf';
     link.click();
   };
+
+  useEffect(() => {
+    if (!canvasRef.current || !frontFile) return;
+
+    const drawPreview = async () => {
+      const ctx = canvasRef.current!.getContext('2d');
+      if (!ctx) return;
+
+      const dpi = 50; // preview resolution
+      const [trimW, trimH] = trimSize.split('x').map(parseFloat);
+      const spineW = pages * 0.002252;
+      const totalW = (trimW * 2 + spineW) * dpi;
+      const height = trimH * dpi;
+      canvasRef.current!.width = totalW;
+      canvasRef.current!.height = height;
+
+      ctx.clearRect(0, 0, totalW, height);
+      ctx.fillStyle = '#f0f0f0';
+      ctx.fillRect(0, 0, totalW, height);
+
+      const frontImg = new Image();
+      frontImg.onload = () => {
+        ctx.drawImage(frontImg, (trimW + spineW) * dpi, 0, trimW * dpi, height);
+      };
+      frontImg.src = URL.createObjectURL(frontFile);
+
+      if (backFile) {
+        const backImg = new Image();
+        backImg.onload = () => {
+          ctx.drawImage(backImg, 0, 0, trimW * dpi, height);
+        };
+        backImg.src = URL.createObjectURL(backFile);
+      }
+
+      ctx.fillStyle = '#ccc';
+      ctx.fillRect(trimW * dpi, 0, spineW * dpi, height);
+
+      ctx.save();
+      ctx.translate((trimW + spineW / 2) * dpi, height / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillStyle = '#000';
+      ctx.font = `${14}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText(title, 0, 5);
+      ctx.restore();
+    };
+
+    drawPreview();
+  }, [frontFile, backFile, title, trimSize, pages]);
 
   return (
     <div className="p-6 max-w-xl mx-auto">
@@ -88,9 +139,12 @@ function App() {
 
       <p className="mb-4">📄 Estimated Pages: {pages}</p>
 
-      <button onClick={handleSubmit} className="bg-blue-600 text-white px-4 py-2 rounded">
+      <button onClick={handleSubmit} className="bg-blue-600 text-white px-4 py-2 rounded mb-4">
         Generate Cover PDF
       </button>
+
+      <h2 className="text-lg font-semibold mb-2">Live Preview:</h2>
+      <canvas ref={canvasRef} className="border rounded shadow-md w-full" />
     </div>
   );
 }
