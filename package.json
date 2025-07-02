@@ -7,8 +7,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "multiparty": "^4.2.3",
+    "pdf-lib": "^1.17.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "sharp": "^0.34.2"
   },
   "devDependencies": {
     "@types/react": "^18.0.0",
