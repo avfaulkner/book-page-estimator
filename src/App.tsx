@@ -11,7 +11,7 @@ function App() {
   const [backFile, setBackFile] = useState<File | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const pages = estimatePages(Number(wordCount) || 0, trimSize, fontSize);
+  const pages = estimatePages(Number(wordCount) || 0, trimSize, Number(fontSize) || 12);
 
   const handleSubmit = async () => {
     const formData = new FormData();
@@ -43,7 +43,7 @@ function App() {
       const ctx = canvasRef.current!.getContext('2d');
       if (!ctx) return;
 
-      const dpi = 50; // preview resolution
+      const dpi = 50;
       const [trimW, trimH] = trimSize.split('x').map(n => parseFloat(n.trim())) as [number, number];
       const spineW = pages * 0.002252;
       const totalW = (trimW * 2 + spineW) * dpi;
@@ -55,12 +55,9 @@ function App() {
       ctx.fillStyle = '#f0f0f0';
       ctx.fillRect(0, 0, totalW, height);
 
-      // Draw back cover or placeholder
       if (backFile) {
         const backImg = new Image();
-        backImg.onload = () => {
-          ctx.drawImage(backImg, 0, 0, trimW * dpi, height);
-        };
+        backImg.onload = () => ctx.drawImage(backImg, 0, 0, trimW * dpi, height);
         backImg.src = URL.createObjectURL(backFile);
       } else {
         ctx.fillStyle = '#d1d5db';
@@ -70,7 +67,6 @@ function App() {
         ctx.fillText('Back Cover', 10, 20);
       }
 
-      // Draw spine
       ctx.fillStyle = '#ccc';
       ctx.fillRect(trimW * dpi, 0, spineW * dpi, height);
       ctx.save();
@@ -82,12 +78,9 @@ function App() {
       ctx.fillText(title, 0, 5);
       ctx.restore();
 
-      // Draw front cover or placeholder
       if (frontFile) {
         const frontImg = new Image();
-        frontImg.onload = () => {
-          ctx.drawImage(frontImg, (trimW + spineW) * dpi, 0, trimW * dpi, height);
-        };
+        frontImg.onload = () => ctx.drawImage(frontImg, (trimW + spineW) * dpi, 0, trimW * dpi, height);
         frontImg.src = URL.createObjectURL(frontFile);
       } else {
         ctx.fillStyle = '#e5e7eb';
@@ -97,8 +90,6 @@ function App() {
         ctx.fillText('Front Cover', (trimW * 2 + spineW) * dpi - 60, 20);
       }
     };
-
-    drawPreview();
 
     const addRuler = () => {
       const ctx = canvasRef.current!.getContext('2d');
@@ -114,7 +105,6 @@ function App() {
       ctx.font = '10px sans-serif';
       ctx.textAlign = 'center';
 
-      // Horizontal inch marks
       for (let i = 0; i <= totalW; i += dpi) {
         ctx.beginPath();
         ctx.moveTo(i, height);
@@ -123,7 +113,6 @@ function App() {
         ctx.fillText((i / dpi).toFixed(0) + '"', i, height - 12);
       }
 
-      // Vertical inch marks
       for (let i = 0; i <= height; i += dpi) {
         ctx.beginPath();
         ctx.moveTo(0, i);
@@ -133,8 +122,9 @@ function App() {
       }
     };
 
+    drawPreview();
     addRuler();
-  }, [frontFile, backFile, title, trimSize, pages]);
+  }, [frontFile, backFile, title, trimSize, pages, fontSize, wordCount]);
 
   return (
     <div className="p-6 max-w-xl mx-auto">
@@ -151,8 +141,8 @@ function App() {
       <input
         type="number"
         placeholder="Font Size"
-        value={fontSize ?? ""}
-        onChange={(e) => setFontSize(e.target.value === "" ? "" : parseFloat(e.target.value))}
+        value={fontSize ?? ''}
+        onChange={(e) => setFontSize(e.target.value === '' ? '' : parseFloat(e.target.value))}
         className="w-full mb-3 p-2 border rounded"
       />
 
@@ -195,6 +185,7 @@ function App() {
       </button>
 
       <h2 className="text-lg font-semibold mb-2">Live Preview:</h2>
+      <canvas ref={canvasRef} className="border rounded shadow-md w-full" />
 
       <button
         onClick={() => {
