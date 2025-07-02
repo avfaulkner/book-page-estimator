@@ -37,7 +37,7 @@ function App() {
   };
 
   useEffect(() => {
-    if (!canvasRef.current || !frontFile) return;
+    if (!canvasRef.current) return;
 
     const drawPreview = async () => {
       const ctx = canvasRef.current!.getContext('2d');
@@ -55,23 +55,24 @@ function App() {
       ctx.fillStyle = '#f0f0f0';
       ctx.fillRect(0, 0, totalW, height);
 
-      const frontImg = new Image();
-      frontImg.onload = () => {
-        ctx.drawImage(frontImg, (trimW + spineW) * dpi, 0, trimW * dpi, height);
-      };
-      frontImg.src = URL.createObjectURL(frontFile);
-
+      // Draw back cover or placeholder
       if (backFile) {
         const backImg = new Image();
         backImg.onload = () => {
           ctx.drawImage(backImg, 0, 0, trimW * dpi, height);
         };
         backImg.src = URL.createObjectURL(backFile);
+      } else {
+        ctx.fillStyle = '#d1d5db';
+        ctx.fillRect(0, 0, trimW * dpi, height);
+        ctx.fillStyle = '#000';
+        ctx.font = '12px sans-serif';
+        ctx.fillText('Back Cover', 10, 20);
       }
 
+      // Draw spine
       ctx.fillStyle = '#ccc';
       ctx.fillRect(trimW * dpi, 0, spineW * dpi, height);
-
       ctx.save();
       ctx.translate((trimW + spineW / 2) * dpi, height / 2);
       ctx.rotate(-Math.PI / 2);
@@ -80,6 +81,21 @@ function App() {
       ctx.textAlign = 'center';
       ctx.fillText(title, 0, 5);
       ctx.restore();
+
+      // Draw front cover or placeholder
+      if (frontFile) {
+        const frontImg = new Image();
+        frontImg.onload = () => {
+          ctx.drawImage(frontImg, (trimW + spineW) * dpi, 0, trimW * dpi, height);
+        };
+        frontImg.src = URL.createObjectURL(frontFile);
+      } else {
+        ctx.fillStyle = '#e5e7eb';
+        ctx.fillRect((trimW + spineW) * dpi, 0, trimW * dpi, height);
+        ctx.fillStyle = '#000';
+        ctx.font = '12px sans-serif';
+        ctx.fillText('Front Cover', (trimW * 2 + spineW) * dpi - 60, 20);
+      }
     };
 
     drawPreview();
