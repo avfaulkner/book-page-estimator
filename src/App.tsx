@@ -195,7 +195,6 @@ function App() {
       </button>
 
       <h2 className="text-lg font-semibold mb-2">Live Preview:</h2>
-      $1
 
       <button
         onClick={() => {
