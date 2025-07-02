@@ -36,11 +36,12 @@ Login to Netlify
 netlify login
 ```
 
-Run locally
+Run initialize netlify, install plugin to devDependencies for use during build
 
 ```
 cd book-page-estimator
 netlify init
+npm install --save-dev @vitejs/plugin-react
 ```
 
 Deploy to Netlify

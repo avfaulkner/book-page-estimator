@@ -21,7 +21,7 @@ function App() {
     formData.append('trimSize', trimSize);
     formData.append('pageCount', pages.toString());
 
-    const res = await fetch('/.netlify/functions/generateCoverPDF', {
+    const res = await fetch('/api/generateCoverPDF', {
       method: 'POST',
       body: formData,
     });
