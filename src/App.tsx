@@ -146,15 +146,46 @@ function App() {
         className="w-full mb-3 p-2 border rounded"
       />
 
-      <select
-        value={trimSize}
-        onChange={(e) => setTrimSize(e.target.value)}
-        className="w-full mb-3 p-2 border rounded"
-      >
-        <option value="5x8">5 x 8</option>
-        <option value="6x9">6 x 9</option>
-        <option value="8.5x11">8.5 x 11</option>
-      </select>
+      <div className="w-full mb-3">
+  <label className="block text-sm font-medium mb-1">Trim Size</label>
+  <select
+    value={trimSize}
+    onChange={(e) => setTrimSize(e.target.value)}
+    className="w-full p-2 border rounded mb-2"
+  >
+    <option value="5x8">5 x 8</option>
+    <option value="6x9">6 x 9</option>
+    <option value="8.5x11">8.5 x 11</option>
+    <option value="8x8">8 x 8 (Square)</option>
+    <option value="8.25x8.25">8.25 x 8.25 (Square)</option>
+    <option value="8.5x8.5">8.5 x 8.5 (Square)</option>
+    <option value="custom">Custom...</option>
+  </select>
+  {trimSize === 'custom' && (
+    <div className="flex space-x-2">
+      <input
+        type="number"
+        step="0.01"
+        placeholder="Width (in)"
+        onChange={(e) => {
+          const h = trimSize.split('x')[1] || '9';
+          setTrimSize(`${e.target.value}x${h}`);
+        }}
+        className="w-1/2 p-2 border rounded"
+      />
+      <input
+        type="number"
+        step="0.01"
+        placeholder="Height (in)"
+        onChange={(e) => {
+          const w = trimSize.split('x')[0] || '6';
+          setTrimSize(`${w}x${e.target.value}`);
+        }}
+        className="w-1/2 p-2 border rounded"
+      />
+    </div>
+  )}
+</div>
 
       <input
         type="text"
