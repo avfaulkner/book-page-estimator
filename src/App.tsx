@@ -10,9 +10,40 @@ function App() {
   const [title, setTitle] = useState('My Book Title');
   const [frontFile, setFrontFile] = useState<File | null>(null);
   const [backFiles, setBackFiles] = useState<File[]>([]);
+  const [margin, setMargin] = useState<number>(20);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const pages = estimatePages(Number(wordCount) || 0, trimSize, Number(fontSize) || 12);
+
+  const moveBackFile = (index: number, direction: number) => {
+    const newOrder = [...backFiles];
+    const target = index + direction;
+    if (target >= 0 && target < newOrder.length) {
+      [newOrder[index], newOrder[target]] = [newOrder[target], newOrder[index]];
+      setBackFiles(newOrder);
+    }
+  };
+
+  const drawBackCoverLayout = (ctx: CanvasRenderingContext2D, dpi: number, width: number, height: number) => {
+    const padding = margin;
+    const imgWidth = (width - padding * 3) / 2;
+    const imgHeight = height / 3 - padding;
+
+    const positions = [
+      [padding, padding],
+      [padding * 2 + imgWidth, padding],
+      [padding, padding * 2 + imgHeight],
+      [padding * 2 + imgWidth, padding * 2 + imgHeight],
+      [width / 2 - imgWidth / 2, padding * 3 + imgHeight * 2],
+    ];
+
+    backFiles.forEach((file, i) => {
+      const [x, y] = positions[i] || [0, 0];
+      const img = new Image();
+      img.onload = () => ctx.drawImage(img, x, y, imgWidth, imgHeight);
+      img.src = URL.createObjectURL(file);
+    });
+  };
 
   const handleSubmit = async () => {
     const formData = new FormData();
@@ -61,18 +92,7 @@ function App() {
       ctx.fillRect(0, 0, totalW, height);
 
       if (backFiles.length > 0) {
-        const cols = 2;
-        const rows = Math.ceil(backFiles.length / cols);
-        const imgW = trimW * dpi / cols;
-        const imgH = height / rows;
-
-        backFiles.forEach((file, i) => {
-          const img = new Image();
-          const x = (i % cols) * imgW;
-          const y = Math.floor(i / cols) * imgH;
-          img.onload = () => ctx.drawImage(img, x, y, imgW, imgH);
-          img.src = URL.createObjectURL(file);
-        });
+        drawBackCoverLayout(ctx, dpi, trimW * dpi, height);
       } else {
         ctx.fillStyle = '#d1d5db';
         ctx.fillRect(0, 0, trimW * dpi, height);
@@ -105,172 +125,33 @@ function App() {
       }
     };
 
-    const addRuler = () => {
-      const ctx = canvasRef.current!.getContext('2d');
-      if (!ctx) return;
-
-      const dpi = 50;
-      const [trimW, trimH] = trimSize.split('x').map(n => parseFloat(n.trim())) as [number, number];
-      const spineW = pages * 0.002252;
-      const totalW = (trimW * 2 + spineW) * dpi;
-      const height = trimH * dpi;
-
-      ctx.fillStyle = '#000';
-      ctx.font = '10px sans-serif';
-      ctx.textAlign = 'center';
-
-      for (let i = 0; i <= totalW; i += dpi) {
-        ctx.beginPath();
-        ctx.moveTo(i, height);
-        ctx.lineTo(i, height - 10);
-        ctx.stroke();
-        ctx.fillText((i / dpi).toFixed(0) + '"', i, height - 12);
-      }
-
-      for (let i = 0; i <= height; i += dpi) {
-        ctx.beginPath();
-        ctx.moveTo(0, i);
-        ctx.lineTo(10, i);
-        ctx.stroke();
-        ctx.fillText((i / dpi).toFixed(0) + '"', 15, i + 3);
-      }
-    };
-
     drawPreview();
-    addRuler();
-  }, [frontFile, backFiles, title, trimSize, pages, fontSize, wordCount]);
+  }, [frontFile, backFiles, title, trimSize, pages, fontSize, wordCount, margin]);
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">📘 Book Page Estimator + Cover Generator</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input
-          type="number"
-          placeholder="Word Count"
-          value={wordCount}
-          onChange={(e) => setWordCount(e.target.value)}
-          className="w-full p-2 border rounded"
-        />
+      <label className="block font-semibold">Back Cover Images (Reorderable)</label>
+      {backFiles.map((file, index) => (
+        <div key={index} className="flex items-center gap-2 mb-1">
+          <span className="text-sm w-8">{index + 1}.</span>
+          <span className="truncate flex-1">{file.name}</span>
+          <button onClick={() => moveBackFile(index, -1)} className="text-xs px-2 py-1 bg-gray-200">↑</button>
+          <button onClick={() => moveBackFile(index, 1)} className="text-xs px-2 py-1 bg-gray-200">↓</button>
+        </div>
+      ))}
 
-        <input
-          type="number"
-          placeholder="Font Size"
-          value={fontSize ?? ''}
-          onChange={(e) => setFontSize(e.target.value === '' ? '' : parseFloat(e.target.value))}
-          className="w-full p-2 border rounded"
-        />
-
-        <input
-          type="text"
-          placeholder="Book Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full md:col-span-2 p-2 border rounded"
-        />
-      </div>
-
-      <div className="my-4">
-        <label className="block text-sm font-medium mb-1">Trim Size
-          <span className="ml-4 text-xs text-gray-600">
-            <label className="mr-2">
-              <input
-                type="radio"
-                name="unit"
-                value="in"
-                checked={unit === 'in'}
-                onChange={() => setUnit('in')}
-              /> in
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="unit"
-                value="cm"
-                checked={unit === 'cm'}
-                onChange={() => setUnit('cm')}
-              /> cm
-            </label>
-          </span>
-        </label>
-        <select
-          value={trimSize}
-          onChange={(e) => setTrimSize(e.target.value)}
-          className="w-full p-2 border rounded mb-2"
-        >
-          <option value="5x8" title="Great for novellas and portable books">5 x 8 (Pocketbook)</option>
-          <option value="6x9" title="Amazon KDP's most common trim size">6 x 9 (KDP Standard)</option>
-          <option value="8.5x11" title="Ideal for workbooks, manuals, and large print books">8.5 x 11 (Workbook)</option>
-          <option value="8x8" title="Balanced square format for artistic books">8 x 8 (Square)</option>
-          <option value="8.25x8.25" title="KDP square coloring book standard size">8.25 x 8.25 (KDP Square)</option>
-          <option value="8.5x8.5" title="Premium square format">8.5 x 8.5 (Square)</option>
-          <option value="custom">Custom...</option>
-        </select>
-        {trimSize === 'custom' && (
-          <div className="flex space-x-2">
-            <input
-              type="number"
-              step="0.01"
-              placeholder="Width (in)"
-              onChange={(e) => {
-                const h = trimSize.split('x')[1] || '9';
-                setTrimSize(`${e.target.value}x${h}`);
-              }}
-              className="w-1/2 p-2 border rounded"
-            />
-            <input
-              type="number"
-              step="0.01"
-              placeholder="Height (in)"
-              onChange={(e) => {
-                const w = trimSize.split('x')[0] || '6';
-                setTrimSize(`${w}x${e.target.value}`);
-              }}
-              className="w-1/2 p-2 border rounded"
-            />
-          </div>
-        )}
-      </div>
-
-      <label className="block mb-1 font-medium">Front Cover Image</label>
+      <label className="block mt-4">Image Margin (px)</label>
       <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setFrontFile(e.target.files?.[0] || null)}
-        className="w-full mb-3 border rounded p-2"
+        type="number"
+        value={margin}
+        min={0}
+        onChange={(e) => setMargin(Number(e.target.value))}
+        className="p-1 border rounded mb-4"
       />
 
-      <label className="block mb-1 font-medium">Back Cover Images (Optional, Multiple)</label>
-      <input
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={(e) => setBackFiles(Array.from(e.target.files || []))}
-        className="w-full mb-3 border rounded p-2"
-      />
-
-      <p className="mb-4">📄 Estimated Pages: {pages}</p>
-
-      <button onClick={handleSubmit} className="bg-blue-600 text-white px-4 py-2 rounded mb-4">
-        Generate Cover PDF
-      </button>
-
-      <h2 className="text-lg font-semibold mb-2">Live Preview:</h2>
       <canvas ref={canvasRef} className="border rounded shadow-md w-full" />
-
-      <button
-        onClick={() => {
-          const canvas = canvasRef.current;
-          if (!canvas) return;
-          const link = document.createElement('a');
-          link.download = 'book_cover_preview.png';
-          link.href = canvas.toDataURL('image/png');
-          link.click();
-        }}
-        className="mt-2 bg-green-600 text-white px-4 py-2 rounded"
-      >
-        Download Preview as Image
-      </button>
     </div>
   );
 }
