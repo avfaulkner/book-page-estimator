@@ -26,6 +26,8 @@ function App() {
   const [descColor, setDescColor] = useState<string>('#000000');
   const [spineFontSize, setSpineFontSize] = useState<number>(14);
   const [spineFontColor, setSpineFontColor] = useState<string>('#000000');
+  const [spineOnlyView, setSpineOnlyView] = useState(false);
+  const [spineFontFamily, setSpineFontFamily] = useState('sans-serif');
   const [bgColor, setBgColor] = useState('#f0f0f0');
   const [textureFile, setTextureFile] = useState<File | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -52,6 +54,15 @@ function App() {
     }
   };
 
+  const downloadPNG = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const link = document.createElement('a');
+    link.download = 'book_cover_preview.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+
   useEffect(() => {
     const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) return;
@@ -71,20 +82,28 @@ function App() {
 
     drawBackground(ctx, totalW, height);
 
-    ctx.fillStyle = '#d1d5db';
-    ctx.fillRect(0, 0, trimW * dpi, height);
-    backImages.forEach(({ file, x, y, width, height }) => {
-      const img = new Image();
-      img.onload = () => ctx.drawImage(img, x, y, width, height);
-      img.src = URL.createObjectURL(file);
-    });
+    if (!spineOnlyView) {
+      ctx.fillStyle = '#d1d5db';
+      ctx.fillRect(0, 0, trimW * dpi, height);
+      backImages.forEach(({ file, x, y, width, height }) => {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, x, y, width, height);
+        img.src = URL.createObjectURL(file);
+      });
 
-    ctx.fillStyle = descColor;
-    ctx.font = `${descFontSize}px sans-serif`;
-    ctx.textAlign = descAlign;
-    description.split('\n').forEach((line, i) => {
-      ctx.fillText(line, descPosition.x, descPosition.y + i * (descFontSize + 4));
-    });
+      ctx.fillStyle = descColor;
+      ctx.font = `${descFontSize}px sans-serif`;
+      ctx.textAlign = descAlign;
+      description.split('\n').forEach((line, i) => {
+        ctx.fillText(line, descPosition.x, descPosition.y + i * (descFontSize + 4));
+      });
+
+      if (frontFile) {
+        const frontImg = new Image();
+        frontImg.onload = () => ctx.drawImage(frontImg, (trimW + spineW) * dpi, 0, trimW * dpi, height);
+        frontImg.src = URL.createObjectURL(frontFile);
+      }
+    }
 
     ctx.fillStyle = '#ccc';
     ctx.fillRect(trimW * dpi, 0, spineW * dpi, height);
@@ -92,54 +111,57 @@ function App() {
     ctx.translate((trimW + spineW / 2) * dpi, height / 2);
     ctx.rotate(-Math.PI / 2);
     ctx.fillStyle = spineFontColor;
-    ctx.font = `${spineFontSize}px sans-serif`;
+    ctx.font = `${spineFontSize}px ${spineFontFamily}`;
     ctx.textAlign = 'center';
     ctx.fillText(`${title} - ${author}`, 0, 5);
     ctx.restore();
-
-    if (frontFile) {
-      const frontImg = new Image();
-      frontImg.onload = () => ctx.drawImage(frontImg, (trimW + spineW) * dpi, 0, trimW * dpi, height);
-      frontImg.src = URL.createObjectURL(frontFile);
-    }
-  }, [backImages, title, author, trimSize, pages, frontFile, description, descFontSize, descAlign, descPosition, bgColor, textureFile, descColor, spineFontSize, spineFontColor]);
+  }, [backImages, title, author, trimSize, pages, frontFile, description, descFontSize, descAlign, descPosition, bgColor, textureFile, descColor, spineFontSize, spineFontColor, spineFontFamily, spineOnlyView]);
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-4">
       <h1 className="text-2xl font-bold">📘 Book Page Estimator + Cover Generator</h1>
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <label className="block">Author Name</label>
-          <input value={author} onChange={e => setAuthor(e.target.value)} className="w-full border p-1 rounded" />
+          <label className="block" title="Total number of words in your manuscript">Word Count 🛈</label>
+          <input type="number" value={wordCount} onChange={e => setWordCount(e.target.value)} className="w-full border p-1 rounded" />
         </div>
         <div>
-          <label className="block">Background Color</label>
-          <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)} className="w-full border p-1 rounded" />
+          <label className="block" title="Size of text inside your book, usually 11–12pt">Font Size 🛈</label>
+          <input type="number" placeholder="font size" value={fontSize} onChange={e => setFontSize(Number(e.target.value))} className="w-full border p-1 rounded" />
+        </div>
+        <div className="col-span-2">
+          <label className="block">Estimated Pages</label>
+          <p className="text-lg font-medium">{pages}</p>
         </div>
         <div>
-          <label className="block">Spine Font Size</label>
-          <input type="number" value={spineFontSize} onChange={e => setSpineFontSize(Number(e.target.value))} className="w-full border p-1 rounded" />
+          <label className="block">Spine Font Family</label>
+          <select value={spineFontFamily} onChange={e => setSpineFontFamily(e.target.value)} className="w-full border p-1 rounded">
+            <option value="sans-serif">Sans-serif</option>
+            <option value="serif">Serif</option>
+            <option value="monospace">Monospace</option>
+            <option value="cursive">Cursive</option>
+          </select>
         </div>
         <div>
-          <label className="block">Spine Font Color</label>
-          <input type="color" value={spineFontColor} onChange={e => setSpineFontColor(e.target.value)} className="w-full border p-1 rounded" />
-        </div>
-        <div>
-          <label className="block">Description Text Color</label>
-          <input type="color" value={descColor} onChange={e => setDescColor(e.target.value)} className="w-full border p-1 rounded" />
-        </div>
-        <div>
-          <label className="block">Upload Texture (Optional)</label>
-          <input type="file" accept="image/*" onChange={e => setTextureFile(e.target.files?.[0] || null)} className="w-full border p-1 rounded" />
+          <label className="inline-flex items-center mt-6">
+            <input type="checkbox" checked={spineOnlyView} onChange={e => setSpineOnlyView(e.target.checked)} className="mr-2" />
+            Preview Spine Only
+          </label>
         </div>
       </div>
       <canvas
         ref={canvasRef}
         className="border rounded shadow-md w-full"
-        onMouseDown={handleCanvasMouseDown}
-        onMouseMove={handleCanvasMouseMove}
-        onMouseUp={handleCanvasMouseUp}
+        onMouseDown={() => {}}
+        onMouseMove={() => {}}
+        onMouseUp={() => {}}
       />
+      <button
+        onClick={downloadPNG}
+        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700"
+      >
+        Download Preview as PNG
+      </button>
     </div>
   );
 }
