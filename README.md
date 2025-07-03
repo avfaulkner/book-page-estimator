@@ -4,6 +4,10 @@ This application will estimate the number of pages a personal literary work shou
 
 Netlify is used as the web host since it does not require setting up a separate backend and it allows for easy upload of images and the generation of a downloadable PDF.
 
+## Site Endpoint
+
+https://book-page-estimator.netlify.app/ 
+
 ## Features
 
 - Estimate book page count based on word count, trim size, and font size.

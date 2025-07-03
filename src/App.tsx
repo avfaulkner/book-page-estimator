@@ -129,27 +129,57 @@ function App() {
   }, [frontFile, backFiles, title, trimSize, pages, fontSize, wordCount, margin]);
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">📘 Book Page Estimator + Cover Generator</h1>
+    <div className="p-6 max-w-3xl mx-auto space-y-4">
+      <h1 className="text-2xl font-bold">📘 Book Page Estimator + Cover Generator</h1>
 
-      <label className="block font-semibold">Back Cover Images (Reorderable)</label>
-      {backFiles.map((file, index) => (
-        <div key={index} className="flex items-center gap-2 mb-1">
-          <span className="text-sm w-8">{index + 1}.</span>
-          <span className="truncate flex-1">{file.name}</span>
-          <button onClick={() => moveBackFile(index, -1)} className="text-xs px-2 py-1 bg-gray-200">↑</button>
-          <button onClick={() => moveBackFile(index, 1)} className="text-xs px-2 py-1 bg-gray-200">↓</button>
+      <div className="grid md:grid-cols-2 gap-4">
+        <div>
+          <label className="block">Word Count</label>
+          <input value={wordCount} onChange={e => setWordCount(e.target.value)} className="w-full border p-1 rounded" />
         </div>
-      ))}
 
-      <label className="block mt-4">Image Margin (px)</label>
-      <input
-        type="number"
-        value={margin}
-        min={0}
-        onChange={(e) => setMargin(Number(e.target.value))}
-        className="p-1 border rounded mb-4"
-      />
+        <div>
+          <label className="block">Font Size</label>
+          <input value={fontSize} onChange={e => setFontSize(Number(e.target.value))} className="w-full border p-1 rounded" placeholder="font size" />
+        </div>
+
+        <div>
+          <label className="block">Trim Size</label>
+          <input value={trimSize} onChange={e => setTrimSize(e.target.value)} className="w-full border p-1 rounded" />
+        </div>
+
+        <div>
+          <label className="block">Title</label>
+          <input value={title} onChange={e => setTitle(e.target.value)} className="w-full border p-1 rounded" />
+        </div>
+
+        <div>
+          <label className="block">Front Cover Image</label>
+          <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && setFrontFile(e.target.files[0])} />
+        </div>
+
+        <div>
+          <label className="block">Back Cover Images</label>
+          <input type="file" multiple accept="image/*" onChange={(e) => setBackFiles(Array.from(e.target.files || []))} />
+        </div>
+
+        <div>
+          <label className="block">Image Margin (px)</label>
+          <input type="number" value={margin} min={0} onChange={(e) => setMargin(Number(e.target.value))} className="w-full border p-1 rounded" />
+        </div>
+      </div>
+
+      <div>
+        <label className="block font-semibold mt-4">Reorder Back Cover Images</label>
+        {backFiles.map((file, index) => (
+          <div key={index} className="flex items-center gap-2 mb-1">
+            <span className="text-sm w-8">{index + 1}.</span>
+            <span className="truncate flex-1">{file.name}</span>
+            <button onClick={() => moveBackFile(index, -1)} className="text-xs px-2 py-1 bg-gray-200">↑</button>
+            <button onClick={() => moveBackFile(index, 1)} className="text-xs px-2 py-1 bg-gray-200">↓</button>
+          </div>
+        ))}
+      </div>
 
       <canvas ref={canvasRef} className="border rounded shadow-md w-full" />
     </div>
