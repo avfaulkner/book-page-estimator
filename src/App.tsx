@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { estimatePages } from './estimatePages';
 
 function App() {
+  const [unit, setUnit] = useState<'in' | 'cm'>('in');
   const [wordCount, setWordCount] = useState('');
   const [trimSize, setTrimSize] = useState('6x9');
   const [fontSize, setFontSize] = useState<number | "">("");
@@ -44,7 +45,11 @@ function App() {
       if (!ctx) return;
 
       const dpi = 50;
-      const [trimW, trimH] = trimSize.split('x').map(n => parseFloat(n.trim())) as [number, number];
+      let [trimW, trimH] = trimSize.split('x').map(n => parseFloat(n.trim())) as [number, number];
+      if (unit === 'cm') {
+        trimW /= 2.54;
+        trimH /= 2.54;
+      }
       const spineW = pages * 0.002252;
       const totalW = (trimW * 2 + spineW) * dpi;
       const height = trimH * dpi;
@@ -147,18 +152,39 @@ function App() {
       />
 
       <div className="w-full mb-3">
-  <label className="block text-sm font-medium mb-1">Trim Size</label>
+  <label className="block text-sm font-medium mb-1">Trim Size
+    <span className="ml-4 text-xs text-gray-600">
+      <label className="mr-2">
+        <input
+          type="radio"
+          name="unit"
+          value="in"
+          checked={unit === 'in'}
+          onChange={() => setUnit('in')}
+        /> in
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="unit"
+          value="cm"
+          checked={unit === 'cm'}
+          onChange={() => setUnit('cm')}
+        /> cm
+      </label>
+    </span>
+  </label>
   <select
     value={trimSize}
     onChange={(e) => setTrimSize(e.target.value)}
     className="w-full p-2 border rounded mb-2"
   >
-    <option value="5x8">5 x 8</option>
-    <option value="6x9">6 x 9</option>
-    <option value="8.5x11">8.5 x 11</option>
-    <option value="8x8">8 x 8 (Square)</option>
-    <option value="8.25x8.25">8.25 x 8.25 (Square)</option>
-    <option value="8.5x8.5">8.5 x 8.5 (Square)</option>
+    <option value="5x8" title="Great for novellas and portable books">5 x 8 (Pocketbook)</option>
+    <option value="6x9" title="Amazon KDP's most common trim size">6 x 9 (KDP Standard)</option>
+    <option value="8.5x11" title="Ideal for workbooks, manuals, and large print books">8.5 x 11 (Workbook)</option>
+    <option value="8x8" title="Balanced square format for artistic books">8 x 8 (Square)</option>
+    <option value="8.25x8.25" title="KDP square coloring book standard size">8.25 x 8.25 (KDP Square)</option>
+    <option value="8.5x8.5" title="Premium square format">8.5 x 8.5 (Square)</option>
     <option value="custom">Custom...</option>
   </select>
   {trimSize === 'custom' && (
@@ -195,19 +221,21 @@ function App() {
         className="w-full mb-3 p-2 border rounded"
       />
 
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setFrontFile(e.target.files?.[0] || null)}
-        className="w-full mb-3"
-      />
+      <label className="block mb-1 font-medium">Front Cover Image</label>
+<input
+  type="file"
+  accept="image/*"
+  onChange={(e) => setFrontFile(e.target.files?.[0] || null)}
+  className="w-full mb-3 border rounded p-2"
+/>
 
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setBackFile(e.target.files?.[0] || null)}
-        className="w-full mb-3"
-      />
+      <label className="block mb-1 font-medium">Back Cover Image (Optional)</label>
+<input
+  type="file"
+  accept="image/*"
+  onChange={(e) => setBackFile(e.target.files?.[0] || null)}
+  className="w-full mb-3 border rounded p-2"
+/>
 
       <p className="mb-4">📄 Estimated Pages: {pages}</p>
 
