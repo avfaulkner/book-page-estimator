@@ -9,7 +9,7 @@ function App() {
   const [fontSize, setFontSize] = useState<number | "">("");
   const [title, setTitle] = useState('My Book Title');
   const [frontFile, setFrontFile] = useState<File | null>(null);
-  const [backFile, setBackFile] = useState<File | null>(null);
+  const [backFiles, setBackFiles] = useState<File[]>([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const pages = estimatePages(Number(wordCount) || 0, trimSize, Number(fontSize) || 12);
@@ -19,7 +19,7 @@ function App() {
     if (!frontFile) return;
 
     formData.append('front', frontFile);
-    if (backFile) formData.append('back', backFile);
+    backFiles.forEach((file, idx) => formData.append(`back${idx}`, file));
     formData.append('title', title);
     formData.append('trimSize', trimSize);
     formData.append('pageCount', pages.toString());
@@ -60,10 +60,19 @@ function App() {
       ctx.fillStyle = '#f0f0f0';
       ctx.fillRect(0, 0, totalW, height);
 
-      if (backFile) {
-        const backImg = new Image();
-        backImg.onload = () => ctx.drawImage(backImg, 0, 0, trimW * dpi, height);
-        backImg.src = URL.createObjectURL(backFile);
+      if (backFiles.length > 0) {
+        const cols = 2;
+        const rows = Math.ceil(backFiles.length / cols);
+        const imgW = trimW * dpi / cols;
+        const imgH = height / rows;
+
+        backFiles.forEach((file, i) => {
+          const img = new Image();
+          const x = (i % cols) * imgW;
+          const y = Math.floor(i / cols) * imgH;
+          img.onload = () => ctx.drawImage(img, x, y, imgW, imgH);
+          img.src = URL.createObjectURL(file);
+        });
       } else {
         ctx.fillStyle = '#d1d5db';
         ctx.fillRect(0, 0, trimW * dpi, height);
@@ -129,113 +138,116 @@ function App() {
 
     drawPreview();
     addRuler();
-  }, [frontFile, backFile, title, trimSize, pages, fontSize, wordCount]);
+  }, [frontFile, backFiles, title, trimSize, pages, fontSize, wordCount]);
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
+    <div className="p-6 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">📘 Book Page Estimator + Cover Generator</h1>
 
-      <input
-        type="number"
-        placeholder="Word Count"
-        value={wordCount}
-        onChange={(e) => setWordCount(e.target.value)}
-        className="w-full mb-3 p-2 border rounded"
-      />
-
-      <input
-        type="number"
-        placeholder="Font Size"
-        value={fontSize ?? ''}
-        onChange={(e) => setFontSize(e.target.value === '' ? '' : parseFloat(e.target.value))}
-        className="w-full mb-3 p-2 border rounded"
-      />
-
-      <div className="w-full mb-3">
-  <label className="block text-sm font-medium mb-1">Trim Size
-    <span className="ml-4 text-xs text-gray-600">
-      <label className="mr-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input
-          type="radio"
-          name="unit"
-          value="in"
-          checked={unit === 'in'}
-          onChange={() => setUnit('in')}
-        /> in
-      </label>
-      <label>
-        <input
-          type="radio"
-          name="unit"
-          value="cm"
-          checked={unit === 'cm'}
-          onChange={() => setUnit('cm')}
-        /> cm
-      </label>
-    </span>
-  </label>
-  <select
-    value={trimSize}
-    onChange={(e) => setTrimSize(e.target.value)}
-    className="w-full p-2 border rounded mb-2"
-  >
-    <option value="5x8" title="Great for novellas and portable books">5 x 8 (Pocketbook)</option>
-    <option value="6x9" title="Amazon KDP's most common trim size">6 x 9 (KDP Standard)</option>
-    <option value="8.5x11" title="Ideal for workbooks, manuals, and large print books">8.5 x 11 (Workbook)</option>
-    <option value="8x8" title="Balanced square format for artistic books">8 x 8 (Square)</option>
-    <option value="8.25x8.25" title="KDP square coloring book standard size">8.25 x 8.25 (KDP Square)</option>
-    <option value="8.5x8.5" title="Premium square format">8.5 x 8.5 (Square)</option>
-    <option value="custom">Custom...</option>
-  </select>
-  {trimSize === 'custom' && (
-    <div className="flex space-x-2">
-      <input
-        type="number"
-        step="0.01"
-        placeholder="Width (in)"
-        onChange={(e) => {
-          const h = trimSize.split('x')[1] || '9';
-          setTrimSize(`${e.target.value}x${h}`);
-        }}
-        className="w-1/2 p-2 border rounded"
-      />
-      <input
-        type="number"
-        step="0.01"
-        placeholder="Height (in)"
-        onChange={(e) => {
-          const w = trimSize.split('x')[0] || '6';
-          setTrimSize(`${w}x${e.target.value}`);
-        }}
-        className="w-1/2 p-2 border rounded"
-      />
-    </div>
-  )}
-</div>
+          type="number"
+          placeholder="Word Count"
+          value={wordCount}
+          onChange={(e) => setWordCount(e.target.value)}
+          className="w-full p-2 border rounded"
+        />
 
-      <input
-        type="text"
-        placeholder="Book Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="w-full mb-3 p-2 border rounded"
-      />
+        <input
+          type="number"
+          placeholder="Font Size"
+          value={fontSize ?? ''}
+          onChange={(e) => setFontSize(e.target.value === '' ? '' : parseFloat(e.target.value))}
+          className="w-full p-2 border rounded"
+        />
+
+        <input
+          type="text"
+          placeholder="Book Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="w-full md:col-span-2 p-2 border rounded"
+        />
+      </div>
+
+      <div className="my-4">
+        <label className="block text-sm font-medium mb-1">Trim Size
+          <span className="ml-4 text-xs text-gray-600">
+            <label className="mr-2">
+              <input
+                type="radio"
+                name="unit"
+                value="in"
+                checked={unit === 'in'}
+                onChange={() => setUnit('in')}
+              /> in
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="unit"
+                value="cm"
+                checked={unit === 'cm'}
+                onChange={() => setUnit('cm')}
+              /> cm
+            </label>
+          </span>
+        </label>
+        <select
+          value={trimSize}
+          onChange={(e) => setTrimSize(e.target.value)}
+          className="w-full p-2 border rounded mb-2"
+        >
+          <option value="5x8" title="Great for novellas and portable books">5 x 8 (Pocketbook)</option>
+          <option value="6x9" title="Amazon KDP's most common trim size">6 x 9 (KDP Standard)</option>
+          <option value="8.5x11" title="Ideal for workbooks, manuals, and large print books">8.5 x 11 (Workbook)</option>
+          <option value="8x8" title="Balanced square format for artistic books">8 x 8 (Square)</option>
+          <option value="8.25x8.25" title="KDP square coloring book standard size">8.25 x 8.25 (KDP Square)</option>
+          <option value="8.5x8.5" title="Premium square format">8.5 x 8.5 (Square)</option>
+          <option value="custom">Custom...</option>
+        </select>
+        {trimSize === 'custom' && (
+          <div className="flex space-x-2">
+            <input
+              type="number"
+              step="0.01"
+              placeholder="Width (in)"
+              onChange={(e) => {
+                const h = trimSize.split('x')[1] || '9';
+                setTrimSize(`${e.target.value}x${h}`);
+              }}
+              className="w-1/2 p-2 border rounded"
+            />
+            <input
+              type="number"
+              step="0.01"
+              placeholder="Height (in)"
+              onChange={(e) => {
+                const w = trimSize.split('x')[0] || '6';
+                setTrimSize(`${w}x${e.target.value}`);
+              }}
+              className="w-1/2 p-2 border rounded"
+            />
+          </div>
+        )}
+      </div>
 
       <label className="block mb-1 font-medium">Front Cover Image</label>
-<input
-  type="file"
-  accept="image/*"
-  onChange={(e) => setFrontFile(e.target.files?.[0] || null)}
-  className="w-full mb-3 border rounded p-2"
-/>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => setFrontFile(e.target.files?.[0] || null)}
+        className="w-full mb-3 border rounded p-2"
+      />
 
-      <label className="block mb-1 font-medium">Back Cover Image (Optional)</label>
-<input
-  type="file"
-  accept="image/*"
-  onChange={(e) => setBackFile(e.target.files?.[0] || null)}
-  className="w-full mb-3 border rounded p-2"
-/>
+      <label className="block mb-1 font-medium">Back Cover Images (Optional, Multiple)</label>
+      <input
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={(e) => setBackFiles(Array.from(e.target.files || []))}
+        className="w-full mb-3 border rounded p-2"
+      />
 
       <p className="mb-4">📄 Estimated Pages: {pages}</p>
 
