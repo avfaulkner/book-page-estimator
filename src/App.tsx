@@ -31,28 +31,9 @@ function App() {
   const [bgColor, setBgColor] = useState('#f0f0f0');
   const [textureFile, setTextureFile] = useState<File | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const dragInfo = useRef<{ index: number; offsetX: number; offsetY: number } | null>(null);
   const [descPosition, setDescPosition] = useState({ x: 20, y: 50 });
-  const descDrag = useRef<{ offsetX: number; offsetY: number } | null>(null);
 
   const pages = estimatePages(Number(wordCount) || 0, trimSize, Number(fontSize) || 12);
-
-  const drawBackground = (ctx: CanvasRenderingContext2D, totalW: number, height: number) => {
-    if (textureFile) {
-      const bg = new Image();
-      bg.onload = () => {
-        const pattern = ctx.createPattern(bg, 'repeat');
-        if (pattern) {
-          ctx.fillStyle = pattern;
-          ctx.fillRect(0, 0, totalW, height);
-        }
-      };
-      bg.src = URL.createObjectURL(textureFile);
-    } else {
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(0, 0, totalW, height);
-    }
-  };
 
   const downloadPNG = () => {
     const canvas = canvasRef.current;
@@ -80,9 +61,24 @@ function App() {
     canvasRef.current.width = totalW;
     canvasRef.current.height = height;
 
-    drawBackground(ctx, totalW, height);
+    // Draw background
+    if (textureFile) {
+      const bg = new Image();
+      bg.onload = () => {
+        const pattern = ctx.createPattern(bg, 'repeat');
+        if (pattern) {
+          ctx.fillStyle = pattern;
+          ctx.fillRect(0, 0, totalW, height);
+        }
+      };
+      bg.src = URL.createObjectURL(textureFile);
+    } else {
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, totalW, height);
+    }
 
     if (!spineOnlyView) {
+      // Back Cover
       ctx.fillStyle = '#d1d5db';
       ctx.fillRect(0, 0, trimW * dpi, height);
       backImages.forEach(({ file, x, y, width, height }) => {
@@ -91,6 +87,7 @@ function App() {
         img.src = URL.createObjectURL(file);
       });
 
+      // Back Description
       ctx.fillStyle = descColor;
       ctx.font = `${descFontSize}px sans-serif`;
       ctx.textAlign = descAlign;
@@ -98,6 +95,7 @@ function App() {
         ctx.fillText(line, descPosition.x, descPosition.y + i * (descFontSize + 4));
       });
 
+      // Front Cover
       if (frontFile) {
         const frontImg = new Image();
         frontImg.onload = () => ctx.drawImage(frontImg, (trimW + spineW) * dpi, 0, trimW * dpi, height);
@@ -105,6 +103,7 @@ function App() {
       }
     }
 
+    // Spine
     ctx.fillStyle = '#ccc';
     ctx.fillRect(trimW * dpi, 0, spineW * dpi, height);
     ctx.save();
@@ -118,23 +117,33 @@ function App() {
   }, [backImages, title, author, trimSize, pages, frontFile, description, descFontSize, descAlign, descPosition, bgColor, textureFile, descColor, spineFontSize, spineFontColor, spineFontFamily, spineOnlyView]);
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-4">
-      <h1 className="text-2xl font-bold">📘 Book Page Estimator + Cover Generator</h1>
+    <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <h1 className="text-2xl font-bold">📘 Book Page Estimator + Cover Designer</h1>
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <label className="block" title="Total number of words in your manuscript">Word Count 🛈</label>
+          <label title="Total number of words in your manuscript">Word Count 🛈</label>
           <input type="number" value={wordCount} onChange={e => setWordCount(e.target.value)} className="w-full border p-1 rounded" />
         </div>
         <div>
-          <label className="block" title="Size of text inside your book, usually 11–12pt">Font Size 🛈</label>
+          <label title="Font size inside your book, usually 11–12pt">Font Size 🛈</label>
           <input type="number" placeholder="font size" value={fontSize} onChange={e => setFontSize(Number(e.target.value))} className="w-full border p-1 rounded" />
         </div>
-        <div className="col-span-2">
-          <label className="block">Estimated Pages</label>
-          <p className="text-lg font-medium">{pages}</p>
+        <div>
+          <label>Trim Size</label>
+          <select value={trimSize} onChange={e => setTrimSize(e.target.value)} className="w-full border p-1 rounded">
+            <option value="6x9">6 x 9</option>
+            <option value="5.5x8.5">5.5 x 8.5</option>
+            <option value="8.5x11">8.5 x 11</option>
+            <option value="8x8">8 x 8 (Square)</option>
+            <option value="7x10">7 x 10</option>
+          </select>
         </div>
         <div>
-          <label className="block">Spine Font Family</label>
+          <label>Estimated Pages</label>
+          <div className="font-medium text-lg">{pages}</div>
+        </div>
+        <div>
+          <label>Spine Font Family</label>
           <select value={spineFontFamily} onChange={e => setSpineFontFamily(e.target.value)} className="w-full border p-1 rounded">
             <option value="sans-serif">Sans-serif</option>
             <option value="serif">Serif</option>
@@ -142,23 +151,27 @@ function App() {
             <option value="cursive">Cursive</option>
           </select>
         </div>
+        <div className="flex items-center gap-2">
+          <input type="checkbox" checked={spineOnlyView} onChange={e => setSpineOnlyView(e.target.checked)} />
+          <label>Preview Spine Only</label>
+        </div>
         <div>
-          <label className="inline-flex items-center mt-6">
-            <input type="checkbox" checked={spineOnlyView} onChange={e => setSpineOnlyView(e.target.checked)} className="mr-2" />
-            Preview Spine Only
-          </label>
+          <label>Background Color</label>
+          <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)} className="w-full border rounded" />
+        </div>
+        <div>
+          <label>Texture Upload (Optional)</label>
+          <input type="file" accept="image/*" onChange={e => setTextureFile(e.target.files?.[0] || null)} className="w-full" />
+        </div>
+        <div className="col-span-2">
+          <label>Front Cover Image</label>
+          <input type="file" accept="image/*" onChange={e => setFrontFile(e.target.files?.[0] || null)} className="w-full" />
         </div>
       </div>
-      <canvas
-        ref={canvasRef}
-        className="border rounded shadow-md w-full"
-        onMouseDown={() => {}}
-        onMouseMove={() => {}}
-        onMouseUp={() => {}}
-      />
+      <canvas ref={canvasRef} className="border rounded shadow w-full" />
       <button
         onClick={downloadPNG}
-        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700"
+        className="px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700"
       >
         Download Preview as PNG
       </button>
