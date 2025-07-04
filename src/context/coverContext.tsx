@@ -50,8 +50,8 @@ interface CoverContextProps {
 export const CoverContext = createContext({} as CoverContextProps);
 
 export const CoverProvider = ({ children }: { children: React.ReactNode }) => {
-  const [wordCount, setWordCount] = useState(0);
-  const [fontSize, setFontSize] = useState(12);
+  const [wordCount, setWordCount] = useState<number[]>([]);
+  const [fontSize, setFontSize] = useState<number[]>([]);
   const [trimSize, setTrimSize] = useState("6x9");
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");

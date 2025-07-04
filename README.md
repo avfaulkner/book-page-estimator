@@ -20,11 +20,19 @@ https://book-page-estimator.netlify.app/
 
 ## Files
 
-- App.tsx: UI (React) for file upload, form fields, PDF download
+- App.tsx: UI (React) for top-level component.
 
-- estimatePages.ts: Page estimation logic with font scaling
+- estimatePages.ts: Page estimation logic with font scaling.
 
 - generateCoverPDF.js: Netlify serverless function for combining images and creating book cover with spine text into a downloadable PDF
+
+- CoverContext.tsx: to store and share state between components.
+
+- PageEstimator.tsx: handles word count, trim size, and page count
+
+- CoverEditor.tsx: handles input fields for cover details and uploads
+
+- CanvasPreview.tsx: handles rendering and dragging logic for the canvas
 
 ## Steps to deploy to Netlify from GitHub using Netlify CLI
 
