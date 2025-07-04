@@ -47,6 +47,8 @@ interface CoverContextProps {
   setDescAlign: (s: string) => void;
   spineOnlyView: boolean;
   setSpineOnlyView: (b: boolean) => void;
+  descY: number;
+  setDescY: (n: number) => void;
 }
 
 export const CoverContext = createContext({} as CoverContextProps);
@@ -70,6 +72,7 @@ export const CoverProvider = ({ children }: { children: React.ReactNode }) => {
   const [descColor, setDescColor] = useState("#000000");
   const [descAlign, setDescAlign] = useState("left");
   const [spineOnlyView, setSpineOnlyView] = useState(false);
+  const [descY, setDescY] = useState(60); // Position description near the top
 
   return (
     <CoverContext.Provider
@@ -109,7 +112,9 @@ export const CoverProvider = ({ children }: { children: React.ReactNode }) => {
         descAlign,
         setDescAlign,
         spineOnlyView,
-        setSpineOnlyView
+        setSpineOnlyView,
+        descY,
+        setDescY
       }}
     >
       {children}

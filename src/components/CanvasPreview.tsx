@@ -20,14 +20,15 @@ const CanvasPreview = () => {
     spineOnlyView,
     wordCount,
     fontSize,
-    trimSize
+    trimSize,
+    descY
   } = useContext(CoverContext);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
 
   const estimatePages = (words: number, trim: string, font: number): number => {
-    const baseWordsPerPage = {
+    const baseWordsPerPage: Record<string, number> = {
       "5x8": 250,
       "6x9": 300,
       "8.5x11": 400,
@@ -87,14 +88,14 @@ const CanvasPreview = () => {
       const textX = descAlign === "center" ? width / 4 : descAlign === "right" ? width / 2 - spineWidth - 20 : 20;
       const lines = description.split("\n");
       lines.forEach((line, i) => {
-        ctx.fillText(line, textX, 400 + i * (descFontSize + 4));
+        ctx.fillText(line, textX, descY + i * (descFontSize + 4));
       });
     }
   };
 
   useEffect(() => {
     drawCanvas();
-  }, [wordCount, fontSize, trimSize, title, author, frontFile, backImages, description, bgColor, spineFontColor, spineFontSize, spineFontFamily, descColor, descFontSize, descAlign, spineOnlyView]);
+  }, [wordCount, fontSize, trimSize, title, author, frontFile, backImages, description, bgColor, spineFontColor, spineFontSize, spineFontFamily, descColor, descFontSize, descAlign, spineOnlyView, descY]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -126,10 +127,8 @@ const CanvasPreview = () => {
 };
 
 export default CanvasPreview;
-// This component renders a canvas preview of the book cover, allowing users to see their design in real-time.
-// It also allows dragging of back cover images and estimates the number of pages based on word count, trim size, and font size.
-// The canvas is redrawn whenever the relevant context values change, ensuring the preview is always up-to-date.
-// The canvas includes the spine, front cover image, back cover images, and description text.
-// The user can drag back cover images around the canvas, and the estimated number of pages is displayed based on the word count, trim size, and font size.
-// The canvas is responsive to changes in the context, such as title, author, front cover image, back images, description, background color, spine font settings, and whether the spine-only view is enabled.
-// The component uses the CoverContext to access and manage the state of the cover design, including title
+// This component renders a canvas preview of the book cover design.
+// It uses the CoverContext to access cover details and allows users to drag and drop back cover images.
+// The canvas is dynamically updated based on the inputs from the CoverContext, including title, author, front cover image, back images, description, and various styling options.
+// The canvas also estimates the number of pages based on the word count, trim size, and font size, displaying the spine width accordingly.
+// Users can interact with the back cover images by dragging them around the canvas, and the canvas is redrawn whenever the relevant context values change.
