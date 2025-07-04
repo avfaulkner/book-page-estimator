@@ -12,7 +12,7 @@ interface ImagePosition {
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [wordCount, setWordCount] = useState(0);
-  const [fontSize, setFontSize] = useState(12);
+  const [fontSize, setFontSize] = useState<number[]>([]);
   const [trimSize, setTrimSize] = useState("6x9");
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
