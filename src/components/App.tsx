@@ -276,7 +276,7 @@ const App = () => {
             type="number"
             className="w-full border p-2"
             placeholder="e.g., 120"
-            value={pageCount || ""}
+            value={pageCount !== 0 ? pageCount : ""}
             onChange={e => setPageCount(parseInt(e.target.value) || 0)}
           />
         </div>
