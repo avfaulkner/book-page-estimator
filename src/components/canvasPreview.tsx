@@ -1,6 +1,6 @@
 // CanvasPreview.tsx
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { CoverContext } from "./context/CoverContext";
+import { CoverContext } from "../context/coverContext";
 
 const CanvasPreview = () => {
   const {

@@ -17,6 +17,8 @@ interface CoverContextProps {
   setFontSize: (n: number) => void;
   trimSize: string;
   setTrimSize: (s: string) => void;
+  pageCount: number;
+  setPageCount: (n: number) => void;
   title: string;
   setTitle: (s: string) => void;
   author: string;
@@ -50,9 +52,10 @@ interface CoverContextProps {
 export const CoverContext = createContext({} as CoverContextProps);
 
 export const CoverProvider = ({ children }: { children: React.ReactNode }) => {
-  const [wordCount, setWordCount] = useState<number[]>([]);
-  const [fontSize, setFontSize] = useState<number[]>([]);
+  const [wordCount, setWordCount] = useState(0);
+  const [fontSize, setFontSize] = useState(12);
   const [trimSize, setTrimSize] = useState("6x9");
+  const [pageCount, setPageCount] = useState(0);
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [frontFile, setFrontFile] = useState<File | null>(null);
@@ -77,6 +80,8 @@ export const CoverProvider = ({ children }: { children: React.ReactNode }) => {
         setFontSize,
         trimSize,
         setTrimSize,
+        pageCount,
+        setPageCount,
         title,
         setTitle,
         author,
