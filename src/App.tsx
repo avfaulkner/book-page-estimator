@@ -31,7 +31,21 @@ const App = () => {
 
   const [draggingId, setDraggingId] = useState<string | null>(null);
 
-  const pages = Math.ceil(wordCount / (trimSize === "8.5x11" ? 400 : 300));
+  // const pages = Math.ceil(wordCount / (trimSize === "8.5x11" ? 400 : 300));
+
+    const estimatePages = (words: number, trim: string, font: number): number => {
+    const baseWordsPerPage = {
+      "5x8": 250,
+      "6x9": 300,
+      "8.5x11": 400,
+      "8.5x8.5": 280
+    };
+    const wordsPerPage = baseWordsPerPage[trim] * (font / 12);
+    return Math.ceil(words / wordsPerPage);
+  };
+
+  const pages = estimatePages(wordCount, trimSize, fontSize);
+
 
   const drawCanvas = () => {
     const canvas = canvasRef.current;
