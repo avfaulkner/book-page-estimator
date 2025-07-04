@@ -1,6 +1,6 @@
 // PageEstimator.tsx
 import React, { useContext, useEffect } from "react";
-import { CoverContext } from "../context/coverContext";
+import { CoverContext } from "../context/CoverContext";
 
 const PageEstimator = () => {
   const {

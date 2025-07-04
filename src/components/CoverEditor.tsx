@@ -1,6 +1,6 @@
 // CoverEditor.tsx
 import React, { useContext } from "react";
-import { CoverContext } from "./context/CoverContext";
+import { CoverContext } from "../context/CoverContext";
 
 const CoverEditor = () => {
   const {
