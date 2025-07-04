@@ -1,13 +1,16 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App'
-import './index.css'
+import App from "./components/App";
+import { CoverProvider } from "./context/coverContext";
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+const root = ReactDOM.createRoot(document.getElementById("root")!);
+root.render(
   <React.StrictMode>
-    <App />
+    <CoverProvider>
+      <App />
+    </CoverProvider>
   </React.StrictMode>
-)
+);
 // This file is the entry point for the React application.
 // It imports React, ReactDOM, the main App component, and the global CSS styles.
 // It then renders the App component into the root element of the HTML document.
