@@ -54,6 +54,7 @@ Run initialize netlify, install plugin to devDependencies for use during build
 cd book-page-estimator
 netlify init
 npm install --save-dev @vitejs/plugin-react
+npm install node-sass --save-dev
 ```
 
 Deploy to Netlify
