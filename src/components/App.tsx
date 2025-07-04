@@ -5,7 +5,7 @@ import CanvasPreview from "./CanvasPreview";
 import { CoverContext } from "../context/CoverContext";
 
 const App = () => {
-  const { pageCount, setPageCount } = useContext(CoverContext);
+  const { pageCount, setPageCount } = React.useContext(CoverContext);
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
