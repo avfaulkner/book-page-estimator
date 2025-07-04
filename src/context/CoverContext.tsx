@@ -121,3 +121,7 @@ export const CoverProvider = ({ children }: { children: React.ReactNode }) => {
     </CoverContext.Provider>
   );
 };
+// This context provides a centralized state management for the book cover design application.
+// It allows components to access and update the cover design parameters such as word count, font size, trim size, page count, title, author, front cover image, back cover images, description, background color, texture file, spine font settings, description font settings, and more.
+// The context is used to share data between components without prop drilling, making it easier to manage the state of the application.
+// The CoverProvider wraps the application, providing the context values to all child components that need access
