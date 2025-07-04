@@ -11,14 +11,14 @@ interface ImagePosition {
 }
 
 interface CoverContextProps {
-  wordCount: number;
-  setWordCount: (n: number) => void;
+  wordCount: number | null;
+  setWordCount: (n: number | null) => void;
   fontSize: number;
   setFontSize: (n: number) => void;
   trimSize: string;
   setTrimSize: (s: string) => void;
-  pageCount: number;
-  setPageCount: (n: number) => void;
+  pageCount: number | null;
+  setPageCount: (n: number | null) => void;
   title: string;
   setTitle: (s: string) => void;
   author: string;
@@ -54,10 +54,10 @@ interface CoverContextProps {
 export const CoverContext = createContext({} as CoverContextProps);
 
 export const CoverProvider = ({ children }: { children: React.ReactNode }) => {
-  const [wordCount, setWordCount] = useState(0);
+  const [wordCount, setWordCount] = useState<number | null>(null);
   const [fontSize, setFontSize] = useState(12);
   const [trimSize, setTrimSize] = useState("6x9");
-  const [pageCount, setPageCount] = useState(0);
+  const [pageCount, setPageCount] = useState<number | null>(null);
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [frontFile, setFrontFile] = useState<File | null>(null);
@@ -72,7 +72,7 @@ export const CoverProvider = ({ children }: { children: React.ReactNode }) => {
   const [descColor, setDescColor] = useState("#000000");
   const [descAlign, setDescAlign] = useState("left");
   const [spineOnlyView, setSpineOnlyView] = useState(false);
-  const [descY, setDescY] = useState(60); // Position description near the top
+  const [descY, setDescY] = useState(60);
 
   return (
     <CoverContext.Provider
