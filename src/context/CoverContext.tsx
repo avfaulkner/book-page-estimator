@@ -92,7 +92,7 @@ export const CoverProvider = ({ children }: { children: React.ReactNode }) => {
   React.useEffect(() => {
     if (wordCount !== null && wordCount > 0) {
       setEstimatedPages(estimatePages(wordCount, trimSize, fontSize));
-    } else if (pageCount !== null && pageCount > 0) {
+    } else if ((wordCount === null || wordCount === 0) && pageCount !== null && pageCount > 0) {
       setEstimatedPages(pageCount);
     } else {
       setEstimatedPages(0);
@@ -148,3 +148,4 @@ export const CoverProvider = ({ children }: { children: React.ReactNode }) => {
     </CoverContext.Provider>
   );
 };
+// This context provides a centralized state management for the book cover design application.
