@@ -49,6 +49,8 @@ interface CoverContextProps {
   setSpineOnlyView: (b: boolean) => void;
   descY: number;
   setDescY: (n: number) => void;
+  estimatedPages: number;
+  setEstimatedPages: (n: number) => void;
 }
 
 export const CoverContext = createContext({} as CoverContextProps);
@@ -73,6 +75,29 @@ export const CoverProvider = ({ children }: { children: React.ReactNode }) => {
   const [descAlign, setDescAlign] = useState("left");
   const [spineOnlyView, setSpineOnlyView] = useState(false);
   const [descY, setDescY] = useState(60);
+
+  const estimatePages = (words: number, trim: string, font: number): number => {
+    const baseWordsPerPage: Record<string, number> = {
+      "5x8": 250,
+      "6x9": 300,
+      "8.5x11": 400,
+      "8.5x8.5": 280
+    };
+    const wordsPerPage = baseWordsPerPage[trim] * (font / 12);
+    return Math.ceil(words / wordsPerPage);
+  };
+
+  const [estimatedPages, setEstimatedPages] = useState<number>(0);
+
+  React.useEffect(() => {
+    if (wordCount !== null && wordCount > 0) {
+      setEstimatedPages(estimatePages(wordCount, trimSize, fontSize));
+    } else if (pageCount !== null && pageCount > 0) {
+      setEstimatedPages(pageCount);
+    } else {
+      setEstimatedPages(0);
+    }
+  }, [wordCount, fontSize, trimSize, pageCount]);
 
   return (
     <CoverContext.Provider
@@ -114,14 +139,12 @@ export const CoverProvider = ({ children }: { children: React.ReactNode }) => {
         spineOnlyView,
         setSpineOnlyView,
         descY,
-        setDescY
+        setDescY,
+        estimatedPages,
+        setEstimatedPages
       }}
     >
       {children}
     </CoverContext.Provider>
   );
 };
-// This context provides a centralized state management for the book cover design application.
-// It allows components to access and update the cover design parameters such as word count, font size, trim size, page count, title, author, front cover image, back cover images, description, background color, texture file, spine font settings, description font settings, and more.
-// The context is used to share data between components without prop drilling, making it easier to manage the state of the application.
-// The CoverProvider wraps the application, providing the context values to all child components that need access
