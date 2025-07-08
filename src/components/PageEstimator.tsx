@@ -1,5 +1,5 @@
 // PageEstimator.tsx
-import React, { useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import { CoverContext } from "../context/CoverContext";
 
 const PageEstimator = () => {
@@ -10,62 +10,65 @@ const PageEstimator = () => {
     setFontSize,
     trimSize,
     setTrimSize,
+    pageCount,
     setPageCount,
-    pageCount
+    estimatedPages
   } = useContext(CoverContext);
 
-  const baseWordsPerPage = {
-    "5x8": 250,
-    "6x9": 300,
-    "8.5x11": 400,
-    "8.5x8.5": 280
-  };
-
-  useEffect(() => {
-    if (wordCount > 0 && fontSize > 0 && !pageCount) {
-      const wpp = baseWordsPerPage[trimSize] * (fontSize / 12);
-      const estimate = Math.ceil(wordCount / wpp);
-      setPageCount(estimate);
-    }
-  }, [wordCount, fontSize, trimSize]);
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid md:grid-cols-3 gap-4">
       <div>
-        <label className="block mb-1">Word Count</label>
+        <label className="block text-sm font-medium mb-1">Word Count</label>
         <input
           type="number"
-          value={wordCount}
-          onChange={e => setWordCount(parseInt(e.target.value) || 0)}
-          className="w-full border p-2"
-          placeholder="e.g., 35000"
+          placeholder="Enter word count"
+          value={wordCount ?? ""}
+          onChange={e => setWordCount(e.target.value ? parseInt(e.target.value) : null)}
+          className="w-full border p-1"
         />
       </div>
       <div>
-        <label className="block mb-1">Font Size</label>
+        <label className="block text-sm font-medium mb-1">Font Size</label>
         <input
           type="number"
           value={fontSize}
-          onChange={e => setFontSize(parseFloat(e.target.value) || 0)}
-          className="w-full border p-2"
-          placeholder="e.g., 12"
+          placeholder="Font size"
+          onChange={e => setFontSize(parseInt(e.target.value))}
+          className="w-full border p-1"
         />
       </div>
       <div>
-        <label className="block mb-1">Trim Size</label>
+        <label className="block text-sm font-medium mb-1">Trim Size</label>
         <select
           value={trimSize}
           onChange={e => setTrimSize(e.target.value)}
-          className="w-full border p-2"
+          className="w-full border p-1"
         >
-          <option value="5x8">5" x 8"</option>
-          <option value="6x9">6" x 9"</option>
-          <option value="8.5x11">8.5" x 11"</option>
-          <option value="8.5x8.5">8.5" x 8.5"</option>
+          <option value="5x8">5 x 8</option>
+          <option value="6x9">6 x 9</option>
+          <option value="8.5x11">8.5 x 11</option>
+          <option value="8.5x8.5">8.5 x 8.5 (Square)</option>
         </select>
+      </div>
+      <div className="md:col-span-2">
+        <label className="block text-sm font-medium mb-1">Optional: Enter known page count</label>
+        <input
+          type="number"
+          placeholder="Optional: known page count"
+          value={pageCount ?? ""}
+          onChange={e => setPageCount(e.target.value ? parseInt(e.target.value) : null)}
+          className="w-full border p-1"
+        />
+      </div>
+      <div className="md:col-span-3 mt-2">
+        <span className="font-semibold">Estimated Pages: </span>
+        {estimatedPages}
       </div>
     </div>
   );
 };
 
 export default PageEstimator;
+// This component allows users to input their book's word count, font size, trim size, and optionally a known page count.
+// It calculates the estimated number of pages based on the inputs and displays it below the input fields.
+// The inputs are styled using Tailwind CSS for a clean and modern look.
