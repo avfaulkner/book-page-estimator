@@ -149,3 +149,8 @@ export const CoverProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 // This context provides a centralized state management for the book cover design application.
+// It includes properties for word count, font size, trim size, page count, title,
+// author, front cover file, back images, description, background color, texture file,
+// spine font settings, description font settings, and various other UI states.
+// The context allows components to access and update these values, enabling dynamic updates
+// to the book cover design and page estimation logic.
