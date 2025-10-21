@@ -16,7 +16,7 @@ const PageEstimator = () => {
   } = useContext(CoverContext);
 
   return (
-    <div className="grid md:grid-cols-3 gap-4">
+    <div className="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
       <div>
         <label className="block text-sm font-medium mb-1">Word Count</label>
         <input

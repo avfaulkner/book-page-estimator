@@ -54,7 +54,7 @@ const CoverEditor = () => {
   };
 
   return (
-    <div className="grid md:grid-cols-2 gap-4">
+    <div className="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
       <div>
         <label>Title</label>
         <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full border p-1" />

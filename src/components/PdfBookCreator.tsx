@@ -74,7 +74,7 @@ const PdfBookCreator: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
       <form
         onSubmit={handleSubmit}
         className="flex flex-col gap-3 bg-white p-4 rounded border border-gray-200 shadow-sm"
