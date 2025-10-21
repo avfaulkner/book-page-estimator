@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, FormEvent, ChangeEvent } from "react";
 
-const PdfBookCreator = () => {
-  const [introPdf, setIntroPdf] = useState(null);
-  const [images, setImages] = useState([]);
+const PdfBookCreator: React.FC = () => {
+  const [introPdf, setIntroPdf] = useState<File | null>(null);
+  const [images, setImages] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
+  const [progress, setProgress] = useState(0);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!introPdf || images.length === 0) {
       setStatus("Please upload an intro PDF and at least one PNG image.");
@@ -14,77 +15,153 @@ const PdfBookCreator = () => {
     }
 
     setLoading(true);
-    setStatus("Creating your book...");
+    setProgress(0);
+    setStatus("Uploading files...");
 
     const formData = new FormData();
     formData.append("intro_pdf", introPdf);
     images.forEach((img) => formData.append("images", img));
 
-    try {
-      const response = await fetch(
-        "https://imgs-to-pdf-book.onrender.com/api/create-pdf-book",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+    const xhr = new XMLHttpRequest();
 
-      if (!response.ok) throw new Error("Error creating PDF.");
+    xhr.open(
+      "POST",
+      import.meta.env.VITE_RENDER_API_URL ||
+        "https://imgs-to-pdf-book.onrender.com/api/create-pdf-book"
+    );
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "book.pdf";
-      a.click();
+    xhr.responseType = "blob";
 
-      setStatus("Book created! Your PDF has been downloaded.");
-    } catch (error) {
-      console.error(error);
-      setStatus("Something went wrong. Please try again.");
-    } finally {
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percent = Math.round((event.loaded / event.total) * 100);
+        setProgress(percent);
+        setStatus(`Uploading files... ${percent}%`);
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        const blob = xhr.response;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "book.pdf";
+        a.click();
+        setStatus("Success! Book created! Your PDF has been downloaded.");
+      } else {
+        setStatus("❌ Error creating PDF. Please try again.");
+      }
       setLoading(false);
-    }
+    };
+
+    xhr.onerror = () => {
+      setStatus("❌ Network error. Please try again.");
+      setLoading(false);
+    };
+
+    xhr.send(formData);
+  };
+
+  const handleIntroChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setIntroPdf(file);
+  };
+
+  const handleImagesChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    setImages(files);
   };
 
   return (
-    <div style={{ maxWidth: "600px", margin: "auto", padding: "1rem" }}>
-      <h2>Create Your PDF Book</h2>
-      <form onSubmit={handleSubmit}>
-        <label>
+    <div className="space-y-4">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-3 bg-white p-4 rounded border border-gray-200 shadow-sm"
+      >
+        <label className="font-medium text-gray-700">
           Intro Page (PDF):
           <input
             type="file"
             accept="application/pdf"
-            onChange={(e) => setIntroPdf(e.target.files[0])}
+            onChange={handleIntroChange}
             required
+            className="block w-full mt-1 text-sm text-gray-600"
           />
         </label>
-        <br />
-        <label>
+
+        <label className="font-medium text-gray-700">
           PNG Pages:
           <input
             type="file"
             accept="image/png"
             multiple
-            onChange={(e) => setImages([...e.target.files])}
+            onChange={handleImagesChange}
             required
+            className="block w-full mt-1 text-sm text-gray-600"
           />
         </label>
-        <br />
+
         <button
           type="submit"
           disabled={loading}
-          style={{
-            marginTop: "10px",
-            padding: "8px 16px",
-            cursor: loading ? "wait" : "pointer",
-          }}
+          className={`flex items-center justify-center gap-2 text-white font-semibold rounded py-2 px-4 transition ${
+            loading
+              ? "bg-blue-300 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
         >
-          {loading ? "Processing..." : "Create Book"}
+          {loading ? (
+            <>
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+              Processing...
+            </>
+          ) : (
+            "Create Book"
+          )}
         </button>
+
+        {/* Progress bar */}
+        {loading && (
+          <div className="w-full bg-gray-200 rounded h-3 mt-2">
+            <div
+              className="bg-blue-600 h-3 rounded transition-all duration-200"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+        )}
       </form>
-      <p style={{ marginTop: "10px" }}>{status}</p>
+
+      <p
+        className={`text-sm font-medium ${
+          status.startsWith("📤") || status.startsWith("Success") // 
+            ? "text-green-600"
+            : status.startsWith("❌")
+            ? "text-red-600"
+            : "text-gray-600"
+        }`}
+      >
+        {status}
+      </p>
     </div>
   );
 };

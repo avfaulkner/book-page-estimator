@@ -58,7 +58,6 @@ const App = () => {
 
 export default App;
 
-
 // This is the main App component that combines the book page estimator,
 // cover editor, and PDF book creator into a single clean interface.
 // Tailwind CSS styling ensures consistent spacing, shadows, and typography.
