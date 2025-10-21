@@ -10,13 +10,11 @@ https://book-page-estimator.netlify.app/
 
 ## Features
 
-- Estimate book page count based on word count, trim size, and font size.
+A complete browser-based tool for authors and creators:
 
-- Accept front and back cover image uploads.
-
-- Generate a print-ready PDF book cover with a spine that includes the book title.
-
-- Run entirely on Netlify, using a serverless function to create the PDF.
+- Estimate how many pages your book should have based on trim size, margins and font size.  
+- Design your front & back cover, including adjustable spine width.  
+- Upload your content (intro page + PNG pages) and generate a print-ready single-sided PDF book.
 
 ## Files
 
