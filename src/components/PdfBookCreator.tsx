@@ -10,7 +10,7 @@ const PdfBookCreator: React.FC = () => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!introPdf || images.length === 0) {
-      setStatus("Please upload an intro PDF and at least one PNG image.");
+      setStatus("⚠️ Please upload an intro PDF and at least one PNG image.");
       return;
     }
 
@@ -40,15 +40,45 @@ const PdfBookCreator: React.FC = () => {
       }
     };
 
-    xhr.onload = () => {
+    xhr.onload = async () => {
       if (xhr.status === 200) {
         const blob = xhr.response;
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "book.pdf";
-        a.click();
-        setStatus("Success! Book created! Your PDF has been downloaded.");
+        try {
+          // Try to open a native “Save As” dialog
+          // @ts-ignore — TypeScript may not know this API yet
+          if (window.showSaveFilePicker) {
+            // @ts-ignore
+            const handle = await window.showSaveFilePicker({
+              suggestedName: "book.pdf",
+              types: [
+                {
+                  description: "PDF File",
+                  accept: { "application/pdf": [".pdf"] },
+                },
+              ],
+            });
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            setStatus("Success! Book created and saved successfully.");
+          } else {
+            // Fallback for unsupported browsers
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "book.pdf";
+            a.click();
+            setStatus("Success! Book created! Your PDF has been downloaded.");
+          }
+        } catch (err: any) {
+          console.warn("Save dialog canceled or unsupported. Falling back.", err);
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "book.pdf";
+          a.click();
+          setStatus("Success! Book created! Your PDF has been downloaded.");
+        }
       } else {
         setStatus("❌ Error creating PDF. Please try again.");
       }
@@ -74,7 +104,7 @@ const PdfBookCreator: React.FC = () => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
+    <div className="space-y-4">
       <form
         onSubmit={handleSubmit}
         className="flex flex-col gap-3 bg-white p-4 rounded border border-gray-200 shadow-sm"
@@ -140,7 +170,6 @@ const PdfBookCreator: React.FC = () => {
           )}
         </button>
 
-        {/* Progress bar */}
         {loading && (
           <div className="w-full bg-gray-200 rounded h-3 mt-2">
             <div
@@ -153,7 +182,7 @@ const PdfBookCreator: React.FC = () => {
 
       <p
         className={`text-sm font-medium ${
-          status.startsWith("📤") || status.startsWith("Success") // 
+          status.startsWith("Success")
             ? "text-green-600"
             : status.startsWith("❌")
             ? "text-red-600"

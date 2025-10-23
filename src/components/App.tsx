@@ -97,7 +97,7 @@ const App = () => {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Annie V. Faulkner
+          AVF
         </a>
       </footer>
     </div>
