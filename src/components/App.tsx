@@ -1,5 +1,5 @@
 import React from "react";
-import Navbar from "./Navbar";
+import Sidebar from "./Sidebar";
 import PageEstimator from "./PageEstimator";
 import CoverEditor from "./CoverEditor";
 import CanvasPreview from "./CanvasPreview";
@@ -10,15 +10,29 @@ const App = () => {
   const { pageCount, setPageCount } = React.useContext(CoverContext);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
-      <Navbar />
-      <main className="max-w-6xl mx-auto px-6 py-10 space-y-16">
-        <section id="estimate">
-          <h2 className="text-2xl font-semibold text-blue-700 mb-4">Estimate Your Pages</h2>
-          <div className="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
+    <div className="bg-slate-50 min-h-screen flex text-slate-800">
+      <Sidebar />
+
+      <main className="flex-1 ml-0 md:ml-56 p-8 space-y-20 max-w-5xl mx-auto">
+        {/* HERO HEADER */}
+        <section id="hero" className="text-center pt-6">
+          <h1 className="text-3xl md:text-4xl font-bold text-blue-700 mb-2">
+            Your All-in-One Book Toolkit
+          </h1>
+          <p className="text-slate-600 max-w-2xl mx-auto">
+            Estimate your page count, design your cover, and create your printable PDF book — all in one place.
+          </p>
+        </section>
+
+        {/* Estimate Pages */}
+        <section id="estimate" className="scroll-mt-24">
+          <h2 className="text-2xl font-semibold text-blue-700 mb-4">
+            📄 Estimate Your Pages
+          </h2>
+          <div className="bg-white p-6 rounded-xl shadow border border-slate-200">
             <PageEstimator />
             <div className="text-lg text-green-700 font-semibold mt-4">
-              Estimated Pages: <span id="estimated-pages-display">{pageCount}</span>
+              Estimated Pages: <span>{pageCount}</span>
             </div>
             <div className="mt-4">
               <label className="block mb-1 font-medium text-slate-700">
@@ -26,7 +40,7 @@ const App = () => {
               </label>
               <input
                 type="number"
-                className="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition"
+                className="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400"
                 placeholder="e.g., 120"
                 value={pageCount !== 0 ? pageCount : ""}
                 onChange={(e) => setPageCount(parseInt(e.target.value) || 0)}
@@ -35,28 +49,30 @@ const App = () => {
           </div>
         </section>
 
-        <section id="cover">
-          <h2 className="text-2xl font-semibold text-blue-700 mb-4">Design Your Cover</h2>
-          <div className="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
+        {/* Design Cover */}
+        <section id="cover" className="scroll-mt-24">
+          <h2 className="text-2xl font-semibold text-blue-700 mb-4">
+            🎨 Design Your Cover
+          </h2>
+          <div className="bg-white p-6 rounded-xl shadow border border-slate-200">
             <CoverEditor />
             <CanvasPreview />
           </div>
         </section>
 
-        <section id="pdf">
-          <h2 className="text-2xl font-semibold text-blue-700 mb-4">Create Your PDF Book</h2>
-          <div className="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
-            <p className="text-sm text-slate-600 mb-4">
+        {/* PDF Book Creator */}
+        <section id="pdf" className="scroll-mt-24">
+          <h2 className="text-2xl font-semibold text-blue-700 mb-4">
+            📘 Create Your PDF Book
+          </h2>
+          <div className="bg-white p-6 rounded-xl shadow border border-slate-200">
+            <p className="text-slate-600 text-sm mb-4">
               Upload your intro page (PDF) and PNG pages to generate a one-sided printable book.
             </p>
             <PdfBookCreator />
           </div>
         </section>
       </main>
-
-      <footer className="text-center text-slate-500 text-sm py-6 border-t border-slate-200 bg-white">
-        © 2025 Book Page Estimator — Designed by AVF
-      </footer>
     </div>
   );
 };
