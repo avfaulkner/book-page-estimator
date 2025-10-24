@@ -1,9 +1,9 @@
 import React from "react";
-import Sidebar from "./components/Sidebar";
-import PageEstimator from "./components/PageEstimator";
-import CoverEditor from "./components/CoverEditor";
-import CanvasPreview from "./components/CanvasPreview";
-import PdfBookCreator from "./components/PdfBookCreator";
+import Sidebar from "./Sidebar";
+import PageEstimator from "./PageEstimator";
+import CoverEditor from "./CoverEditor";
+import CanvasPreview from "./CanvasPreview";
+import PdfBookCreator from "./PdfBookCreator";
 import { CoverContext } from "../context/CoverContext";
 
 const App = () => {
